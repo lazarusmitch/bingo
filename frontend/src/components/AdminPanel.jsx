@@ -22,6 +22,7 @@ export default function AdminPanel() {
       const data = await api.adminLogin(username, password);
       if (data.success) {
         setToken(data.token);
+        api.setAdminToken(data.token);
         toast.success('Admin login successful');
       } else {
         toast.error(data.error || 'Login failed');
@@ -94,7 +95,10 @@ export default function AdminPanel() {
           <p className="text-amber-200">Review winners, tickets, and claim status.</p>
         </div>
         <button
-          onClick={() => setToken(null)}
+          onClick={() => {
+            api.clearAdminToken();
+            setToken(null);
+          }}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full"
         >
           Sign out

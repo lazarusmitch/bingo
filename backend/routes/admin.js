@@ -1,8 +1,36 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { getDb } from '../database.js';
 
 const router = express.Router();
+const activeTokens = new Map();
+
+function createToken(username) {
+  const token = crypto.randomBytes(24).toString('hex');
+  activeTokens.set(token, {
+    username,
+    expiresAt: Date.now() + 1000 * 60 * 60 // 1 hour
+  });
+  return token;
+}
+
+function authenticateAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  const token = authHeader.slice(7);
+  const session = activeTokens.get(token);
+  if (!session || session.expiresAt < Date.now()) {
+    activeTokens.delete(token);
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+
+  req.adminUser = session.username;
+  next();
+}
 
 router.post('/login', async (req, res) => {
   try {
@@ -19,13 +47,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
-    const token = Buffer.from(`${username}:${Date.now()}`).toString('base64');
+    const token = createToken(username);
     res.json({ success: true, token });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ success: false, error: 'Login failed' });
   }
 });
+
+router.use(authenticateAdmin);
 
 router.get('/winners', async (req, res) => {
   try {
