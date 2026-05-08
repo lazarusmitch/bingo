@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-blue-900 via-blue-800 to-amber-900 min-h-screen text-white;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  .bingo-cell {
+    @apply w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-white rounded-lg shadow-md font-bold text-lg text-blue-900;
+  }
+  .bingo-cell-free {
+    @apply bg-amber-400 text-amber-900;
+  }
+  .prize-card {
+    @apply bg-white/10 backdrop-blur-md rounded-xl p-4 text-center border border-amber-400/30;
+  }
+}
